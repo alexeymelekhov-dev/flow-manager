@@ -2,28 +2,49 @@ databaseChangeLog:
   - changeSet:
       id: 003-create-shedlock
       author: Alexey
+      comment: Create ShedLock table for distributed scheduler locking
+
+      preConditions:
+        onFail: HALT
+          - not:
+              - tableExists:
+                  tableName: shedlock
+
       changes:
         - createTable:
             tableName: shedlock
+            remarks: Stores locks for scheduled tasks
+
             columns:
               - column:
                   name: name
                   type: VARCHAR(64)
+                  remarks: Unique name of the scheduled task lock
                   constraints:
                     primaryKey: true
                     nullable: false
+
               - column:
                   name: lock_until
                   type: TIMESTAMP WITH TIME ZONE
+                  remarks: Time until which the lock is held
                   constraints:
                     nullable: false
+
               - column:
                   name: locked_at
                   type: TIMESTAMP WITH TIME ZONE
+                  remarks: Time when the lock was acquired
                   constraints:
                     nullable: false
+
               - column:
                   name: locked_by
                   type: VARCHAR(255)
+                  remarks: Identifier of the instance that acquired the lock
                   constraints:
                     nullable: false
+
+      rollback:
+        - dropTable:
+            tableName: shedlock
