@@ -20,8 +20,8 @@ public class FileUploadedEventProducer {
     private final OutboxRepository outboxRepository;
     private final KafkaTemplate<String, String> kafkaTemplate;
 
-//    @Scheduled(fixedDelay = 1000)
-//    @SchedulerLock(name = "publishPendingEvents", lockAtMostFor = "30s", lockAtLeastFor = "1s")
+    @Scheduled(fixedDelay = 1000)
+    @SchedulerLock(name = "publishPendingEvents", lockAtMostFor = "30s", lockAtLeastFor = "1s")
     public void publishPendingEvents() {
         outboxRepository.findByPublishedAtIsNull()
                 .forEach(this::publish);
