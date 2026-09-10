@@ -1,5 +1,6 @@
 package com.alexeymelekhov.flowmanager.controller.api.v1;
 
+import com.alexeymelekhov.flowmanager.dto.FileDTO;
 import com.alexeymelekhov.flowmanager.dto.FileDownloadDTO;
 import com.alexeymelekhov.flowmanager.dto.FileStatusDTO;
 import com.alexeymelekhov.flowmanager.service.FileService;
@@ -23,8 +24,8 @@ public class FileController {
     private final FileService fileService;
 
     @PostMapping
-    public void upload(@RequestParam("file") MultipartFile file) {
-        fileService.upload(file);
+    public FileDTO upload(@RequestParam("file") MultipartFile file) {
+        return fileService.upload(file);
     }
 
     @GetMapping("/{id}/status")

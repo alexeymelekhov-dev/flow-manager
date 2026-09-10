@@ -1,9 +1,6 @@
 package com.alexeymelekhov.flowmanager.service;
 
-import com.alexeymelekhov.flowmanager.dto.FileConvertedEventDTO;
-import com.alexeymelekhov.flowmanager.dto.FileDownloadDTO;
-import com.alexeymelekhov.flowmanager.dto.FileStatusDTO;
-import com.alexeymelekhov.flowmanager.dto.FileUploadedEventDTO;
+import com.alexeymelekhov.flowmanager.dto.*;
 import com.alexeymelekhov.flowmanager.exception.*;
 import com.alexeymelekhov.flowmanager.model.*;
 import com.alexeymelekhov.flowmanager.repository.ConvertedFileRepository;
@@ -51,7 +48,7 @@ public class FileService {
     private static final String CONVERTED_FILES_ZIP = "converted-files.zip";
 
     @Transactional
-    public void upload(MultipartFile file) {
+    public FileDTO upload(MultipartFile file) {
         if (file.isEmpty()) {
             throw new FileValidationException(ErrorMessage.EMPTY_FILE.getMessage());
         }
@@ -71,6 +68,8 @@ public class FileService {
         File savedFile = saveFile(file, path);
 
         saveOutbox(savedFile);
+
+        return new FileDTO(savedFile.getName(), savedFile.getStatus());
     }
 
     @Transactional
