@@ -10,7 +10,7 @@ import java.util.UUID;
 public record FileConvertedEventDTO(
         @NotNull UUID eventId,
         @NotBlank String bucket,
-        @NotBlank FileStatus status,
+        @NotNull FileStatus status,
         List<FileConvertedDTO> files
 ) {
 }
