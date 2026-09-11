@@ -9,6 +9,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.core.io.Resource;
 import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
@@ -24,8 +25,9 @@ public class FileController {
     private final FileService fileService;
 
     @PostMapping
-    public FileDTO upload(@RequestParam("file") MultipartFile file) {
-        return fileService.upload(file);
+    public ResponseEntity<FileDTO> upload(@RequestParam("file") MultipartFile file) {
+        return ResponseEntity.status(HttpStatus.CREATED)
+                .body(fileService.upload(file));
     }
 
     @GetMapping("/{id}/status")
