@@ -1,0 +1,43 @@
+databaseChangeLog:
+  - changeSet:
+      id: 005-create-converted-files
+      author: Alexey
+      comment: Create table for converted files
+
+      preConditions:
+        onFail: HALT
+          - not:
+              - tableExists:
+                  tableName: converted_files
+
+      changes:
+        - createTable:
+            tableName: converted_files
+            remarks: Stores information about files converted from uploaded files
+            columns:
+              - column:
+                  name: id
+                  type: BIGINT
+                  autoIncrement: true
+                  remarks: Unique identifier of the converted file
+                  constraints:
+                    primaryKey: true
+                    nullable: false
+
+              - column:
+                  name: name
+                  type: VARCHAR(255)
+                  remarks: Name of the converted file
+                  constraints:
+                    nullable: false
+
+              - column:
+                  name: file_id
+                  type: UUID
+                  remarks: Identifier of the source file
+                  constraints:
+                    nullable: false
+
+      rollback:
+        - dropTable:
+            tableName: converted_files

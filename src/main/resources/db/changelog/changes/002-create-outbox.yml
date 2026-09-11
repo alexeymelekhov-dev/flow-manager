@@ -1,0 +1,62 @@
+databaseChangeLog:
+  - changeSet:
+      id: 002-create-outbox
+      author: Alexey
+      comment: Create table for transactional outbox events
+
+      preConditions:
+        onFail: HALT
+          - not:
+            - tableExists:
+                tableName: outbox
+
+      changes:
+        - createTable:
+            tableName: outbox
+            remarks: Stores events waiting to be published to Kafka
+            columns:
+              - column:
+                  name: id
+                  type: UUID
+                  remarks: Unique identifier of the outbox record
+                  constraints:
+                    primaryKey: true
+                    nullable: false
+
+              - column:
+                  name: event_id
+                  type: UUID
+                  remarks: Identifier of the event
+                  constraints:
+                    nullable: false
+
+              - column:
+                  name: topic
+                  type: VARCHAR(255)
+                  remarks: Kafka topic to publish the event to
+                  constraints:
+                    nullable: false
+
+              - column:
+                  name: payload
+                  type: TEXT
+                  remarks: Serialized event payload
+                  constraints:
+                    nullable: false
+
+              - column:
+                  name: created_at
+                  type: TIMESTAMP WITH TIME ZONE
+                  remarks: Timestamp when the event was created
+                  defaultValueDate: now()
+                  constraints:
+                    nullable: false
+
+              - column:
+                  name: published_at
+                  remarks: Timestamp when the event was published
+                  type: TIMESTAMP WITH TIME ZONE
+
+      rollback:
+        - dropTable:
+            tableName: outbox

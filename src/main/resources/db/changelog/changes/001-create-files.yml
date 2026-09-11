@@ -1,0 +1,49 @@
+databaseChangeLog:
+  - changeSet:
+      id: 001-create-files
+      author: Alexey
+      comment: Create table for file
+      remarks: Stores uploaded files and their processing status
+
+      preConditions:
+        onFail: HALT
+          - not:
+              - tableExists:
+                  tableName: files
+
+      changes:
+        - createTable:
+            tableName: files
+            columns:
+              - column:
+                  name: id
+                  type: UUID
+                  remarks: Unique identifier of the file
+                  constraints:
+                    primaryKey: true
+                    nullable: false
+
+              - column:
+                  name: name
+                  type: VARCHAR(255)
+                  remarks: Original file name
+                  constraints:
+                    nullable: false
+
+              - column:
+                  name: path
+                  type: VARCHAR(1024)
+                  remarks: Path to the uploaded file in object storage
+                  constraints:
+                    nullable: false
+
+              - column:
+                  name: status
+                  type: VARCHAR(50)
+                  remarks: Current file processing status
+                  constraints:
+                    nullable: false
+
+      rollback:
+        - dropTable:
+            tableName: files
