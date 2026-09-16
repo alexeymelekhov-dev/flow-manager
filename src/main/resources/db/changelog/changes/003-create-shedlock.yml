@@ -5,10 +5,10 @@ databaseChangeLog:
       comment: Create ShedLock table for distributed scheduler locking
 
       preConditions:
-        onFail: HALT
-          - not:
-              - tableExists:
-                  tableName: shedlock
+        - onFail: HALT
+        - not:
+            - tableExists:
+                tableName: shedlock
 
       changes:
         - createTable:

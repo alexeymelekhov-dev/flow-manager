@@ -5,8 +5,8 @@ databaseChangeLog:
       comment: Create table for transactional outbox events
 
       preConditions:
-        onFail: HALT
-          - not:
+        - onFail: HALT
+        - not:
             - tableExists:
                 tableName: outbox
 

@@ -5,10 +5,10 @@ databaseChangeLog:
       comment: Create inbox table for tracking processed consumer events
 
       preConditions:
-        onFail: HALT
-          - not:
-              - tableExists:
-                  tableName: inbox
+        - onFail: HALT
+        - not:
+            - tableExists:
+                tableName: inbox
 
       changes:
         - createTable:

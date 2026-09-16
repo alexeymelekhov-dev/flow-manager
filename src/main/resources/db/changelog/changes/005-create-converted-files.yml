@@ -5,10 +5,10 @@ databaseChangeLog:
       comment: Create table for converted files
 
       preConditions:
-        onFail: HALT
-          - not:
-              - tableExists:
-                  tableName: converted_files
+        - onFail: HALT
+        - not:
+            - tableExists:
+                tableName: converted_files
 
       changes:
         - createTable:

@@ -6,10 +6,10 @@ databaseChangeLog:
       remarks: Stores uploaded files and their processing status
 
       preConditions:
-        onFail: HALT
-          - not:
-              - tableExists:
-                  tableName: files
+        - onFail: HALT
+        - not:
+          - tableExists:
+              tableName: files
 
       changes:
         - createTable:
