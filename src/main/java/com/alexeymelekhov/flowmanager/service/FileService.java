@@ -39,7 +39,7 @@ public class FileService {
     private final InboxRepository inboxRepository;
     private final ObjectMapper objectMapper;
     private final ConvertedFileRepository convertedFileRepository;
-    private final SubscriptionClient subscriptionClient;
+    private final SubscriptionCacheService subscriptionCacheService;
 
     @Value("${spring.file.upload.max-size}")
     private DataSize maxFileSize;
@@ -58,7 +58,7 @@ public class FileService {
             throw new FileValidationException(ErrorMessage.EMPTY_FILE.getMessage());
         }
 
-        SubscriptionDTO subscription = subscriptionClient.getSubscription(login);
+        SubscriptionDTO subscription = subscriptionCacheService.getSubscription(login);
 
         if (subscription.type() == SubscriptionType.FREE
             && file.getSize() > maxFileSize.toBytes()) {
