@@ -1,8 +1,8 @@
 package com.alexeymelekhov.flowmanager.service;
 
-import com.alexeymelekhov.flowmanager.client.SubscriptionClient;
 import com.alexeymelekhov.flowmanager.dto.*;
 import com.alexeymelekhov.flowmanager.exception.*;
+import com.alexeymelekhov.flowmanager.kafka.KafkaTopics;
 import com.alexeymelekhov.flowmanager.model.*;
 import com.alexeymelekhov.flowmanager.repository.ConvertedFileRepository;
 import com.alexeymelekhov.flowmanager.repository.FileRepository;
@@ -43,9 +43,6 @@ public class FileService {
 
     @Value("${spring.file.upload.max-size}")
     private DataSize maxFileSize;
-
-    @Value("${spring.kafka.producer.topic}")
-    private String topic;
 
     @Value("${minio.bucket}")
     private String bucket;
@@ -183,7 +180,7 @@ public class FileService {
         Outbox outbox = new Outbox();
         outbox.setId(UUID.randomUUID());
         outbox.setEventId(fileUploadedEventDTO.eventId());
-        outbox.setTopic(topic);
+        outbox.setTopic(KafkaTopics.FILE_UPLOADED);
         outbox.setPayload(serialize(fileUploadedEventDTO));
         outbox.setCreatedAt(OffsetDateTime.now());
 

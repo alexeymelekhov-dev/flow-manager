@@ -19,7 +19,7 @@ public class FileConvertedEventConsumer {
     private final FileService fileService;
 
     @KafkaListener(
-            topics = "${spring.kafka.consumer.topic}",
+            topics = KafkaTopics.FILE_CONVERTED,
             groupId = "${spring.kafka.consumer.group-id}"
     )
     public void listen(String message) {
