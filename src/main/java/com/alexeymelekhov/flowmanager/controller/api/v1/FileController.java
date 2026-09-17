@@ -18,16 +18,19 @@ import java.util.UUID;
 
 @RestController
 @RequiredArgsConstructor
-@RequestMapping("api/v1/files")
+@RequestMapping("/api/v1/files")
 public class FileController {
 
     private static final Logger log = LoggerFactory.getLogger(FileController.class);
     private final FileService fileService;
 
     @PostMapping
-    public ResponseEntity<FileDTO> upload(@RequestParam("file") MultipartFile file) {
+    public ResponseEntity<FileDTO> upload(
+            @RequestParam("file") MultipartFile file,
+            @RequestHeader("X-User-Login") String login
+    ) {
         return ResponseEntity.status(HttpStatus.CREATED)
-                .body(fileService.upload(file));
+                .body(fileService.upload(file, login));
     }
 
     @GetMapping("/{id}/status")

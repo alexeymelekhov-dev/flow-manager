@@ -14,7 +14,8 @@ public enum ErrorMessage {
     FILE_NOT_FOUND("File not found"),
     FILE_NOT_READY_TO_DOWNLOAD("File is not ready for download"),
     FAILED_DOWNLOAD_FILE("Failed to download file from MinIO"),
-    FAILED_TO_CREATE_ZIP("Failed to create ZIP archive");
+    FAILED_TO_CREATE_ZIP("Failed to create ZIP archive"),
+    FAILED_MAX_FILE_SIZE("File size exceeds the allowed limit for your subscription");
 
     private final String message;
 
