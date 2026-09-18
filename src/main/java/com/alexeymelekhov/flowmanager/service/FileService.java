@@ -2,6 +2,7 @@ package com.alexeymelekhov.flowmanager.service;
 
 import com.alexeymelekhov.flowmanager.dto.*;
 import com.alexeymelekhov.flowmanager.exception.*;
+import com.alexeymelekhov.flowmanager.kafka.KafkaTopics;
 import com.alexeymelekhov.flowmanager.model.*;
 import com.alexeymelekhov.flowmanager.repository.ConvertedFileRepository;
 import com.alexeymelekhov.flowmanager.repository.FileRepository;
@@ -10,13 +11,13 @@ import com.alexeymelekhov.flowmanager.repository.OutboxRepository;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
-import org.apache.kafka.common.errors.ResourceNotFoundException;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.io.ByteArrayResource;
 import org.springframework.core.io.InputStreamResource;
 import org.springframework.core.io.Resource;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.unit.DataSize;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.ByteArrayOutputStream;
@@ -38,9 +39,10 @@ public class FileService {
     private final InboxRepository inboxRepository;
     private final ObjectMapper objectMapper;
     private final ConvertedFileRepository convertedFileRepository;
+    private final SubscriptionCacheService subscriptionCacheService;
 
-    @Value("${spring.kafka.producer.topic}")
-    private String topic;
+    @Value("${spring.file.upload.max-size}")
+    private DataSize maxFileSize;
 
     @Value("${minio.bucket}")
     private String bucket;
@@ -48,9 +50,16 @@ public class FileService {
     private static final String CONVERTED_FILES_ZIP = "converted-files.zip";
 
     @Transactional
-    public FileDTO upload(MultipartFile file) {
+    public FileDTO upload(MultipartFile file, String login) {
         if (file.isEmpty()) {
             throw new FileValidationException(ErrorMessage.EMPTY_FILE.getMessage());
+        }
+
+        SubscriptionDTO subscription = subscriptionCacheService.getSubscription(login);
+
+        if (subscription.type() == SubscriptionType.FREE
+            && file.getSize() > maxFileSize.toBytes()) {
+            throw new FileValidationException(ErrorMessage.FAILED_MAX_FILE_SIZE.getMessage());
         }
 
         String originalName = file.getOriginalFilename();
@@ -79,7 +88,7 @@ public class FileService {
         }
 
         File file = fileRepository.findById(dto.eventId())
-                .orElseThrow(() -> new ResourceNotFoundException(ErrorMessage.FILE_NOT_FOUND.getMessage()));
+                .orElseThrow(() -> new FileNotFoundException(ErrorMessage.FILE_NOT_FOUND.getMessage()));
         file.setStatus(dto.status());
 
         dto.files().forEach(f -> {
@@ -91,14 +100,14 @@ public class FileService {
 
     public FileStatusDTO getStatus(UUID id) {
         File file = fileRepository.findById(id)
-                .orElseThrow(() -> new ResourceNotFoundException(ErrorMessage.FILE_NOT_FOUND.getMessage()));
+                .orElseThrow(() -> new FileNotFoundException(ErrorMessage.FILE_NOT_FOUND.getMessage()));
 
         return new FileStatusDTO(file.getStatus());
     }
 
     public FileDownloadDTO download(UUID id) {
         File file = fileRepository.findById(id)
-                .orElseThrow(() -> new ResourceNotFoundException(ErrorMessage.FILE_NOT_FOUND.getMessage()));
+                .orElseThrow(() -> new FileNotFoundException(ErrorMessage.FILE_NOT_FOUND.getMessage()));
 
         List<ConvertedFile> files = convertedFileRepository.findAllByFileId(id);
 
@@ -171,7 +180,7 @@ public class FileService {
         Outbox outbox = new Outbox();
         outbox.setId(UUID.randomUUID());
         outbox.setEventId(fileUploadedEventDTO.eventId());
-        outbox.setTopic(topic);
+        outbox.setTopic(KafkaTopics.FILE_UPLOADED);
         outbox.setPayload(serialize(fileUploadedEventDTO));
         outbox.setCreatedAt(OffsetDateTime.now());
 
